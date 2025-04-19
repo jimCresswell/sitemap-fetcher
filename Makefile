@@ -14,14 +14,14 @@ resume:
 	. venv/bin/activate && python -m sitemap_fetcher.main https://www.thenational.academy/sitemap.xml urls.txt --resume
 
 demo:
-	. venv/bin/activate && python -m sitemap_fetcher.main https://www.thenational.academy/sitemap.xml urls.txt -n 10
+	. venv/bin/activate && python -m sitemap_fetcher.main https://www.thenational.academy/sitemap.xml ./output/urls.txt -n 20
 
 test:
 	. venv/bin/activate && python -m pytest --cov=sitemap_fetcher --cov-report term-missing
 
 clean:
 	rm -rf venv
-	rm -f urls.txt
+	rm -f urls.txt ./output/urls.txt
 
 format:
 	. venv/bin/activate && python -m black sitemap_fetcher/ tests/

@@ -101,6 +101,7 @@ celerybeat.pid
 *.sage.py
 
 # Environments
+# Allow .env for configuration (requested by user)
 .env
 .venv
 env/

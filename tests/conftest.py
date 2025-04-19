@@ -1,6 +1,7 @@
 import pytest
 import requests
 import codecs  # Import codecs for BOM
+from sitemap_fetcher.fetcher import SitemapFetcher
 
 
 # Helper class for mocking requests.get
@@ -27,6 +28,18 @@ class MockResponse:
     #         return ET.fromstring(self.content)
     #     except ET.ParseError:
     #         raise ET.ParseError("Failed to parse XML")
+
+
+# --- Global fixtures ----------------------------------------------------------
+
+# Disable network throttling in *all* tests to avoid unnecessary delays.
+# Using ``autouse=True`` ensures it is applied automatically.
+
+@pytest.fixture(autouse=True)
+def _disable_throttle(monkeypatch):
+    """Monkey‑patch ``SitemapFetcher._throttle`` to a no‑op for speed."""
+
+    monkeypatch.setattr(SitemapFetcher, "_throttle", lambda self: None)
 
 
 # Monkeypatch requests.get
@@ -110,3 +123,5 @@ def patch_requests(monkeypatch):
         return MockResponse("<root/>", status_code=404)
 
     monkeypatch.setattr(requests, "get", fake_get)
+
+    # No need to patch _throttle here anymore (handled globally)

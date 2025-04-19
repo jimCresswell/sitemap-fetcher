@@ -1,8 +1,8 @@
 import xml.etree.ElementTree as ET
+from unittest.mock import ANY, patch
+
 import pytest
 import requests
-from unittest.mock import patch
-
 from sitemap_fetcher.fetcher import SitemapFetcher
 
 # Fixtures like patch_requests are automatically discovered from conftest.py
@@ -49,12 +49,12 @@ def test_fetcher_timeout(mock_get):
     # Test default timeout
     fetcher_default = SitemapFetcher()
     fetcher_default.fetch_sitemap("http://test.com/sitemap.xml")
-    mock_get.assert_called_with("http://test.com/sitemap.xml", timeout=30)
+    mock_get.assert_called_with("http://test.com/sitemap.xml", timeout=30, headers=ANY)
 
     # Test custom timeout
     fetcher_custom = SitemapFetcher(timeout=15)
     fetcher_custom.fetch_sitemap("http://test.com/sitemap.xml")
-    mock_get.assert_called_with("http://test.com/sitemap.xml", timeout=15)
+    mock_get.assert_called_with("http://test.com/sitemap.xml", timeout=15, headers=ANY)
 
 
 def test_fetcher_fetch_sitemap_utf8_fallback(patch_requests):
