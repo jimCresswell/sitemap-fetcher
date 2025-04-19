@@ -1,0 +1,20 @@
+{
+  "python.languageServer": "None",
+  "python.analysis.diagnosticMode": "workspace",
+  "cSpell.words": [
+    "htmlcov",
+    "maxfail",
+    "monkeypatching",
+    "mypy",
+    "pylint",
+    "pytest",
+    "resp",
+    "venv"
+  ],
+  "[python]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "ms-python.black-formatter" // Use the Black Formatter extension
+  },
+  "makefile.configureOnOpen": false,
+  "python.defaultInterpreterPath": "venv/bin/python"
+}
