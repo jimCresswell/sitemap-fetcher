@@ -60,6 +60,7 @@ You can also run the test suite via `make test`.
 This project uses `black` for formatting, `flake8` and `pylint` for linting, and `mypy` for type checking.
 
 Configuration files:
+
 - `.flake8`: Configures flake8 rules (e.g., max line length).
 - `.pylintrc`: Configures pylint rules (e.g., disabling specific checks, line length).
 - `pyproject.toml`: (Optional) Can be used for `black` and `mypy` configuration if needed.
