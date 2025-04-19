@@ -8,10 +8,10 @@ update-deps:
 	. venv/bin/activate && pur -r requirements.txt && make install
 
 run:
-	. venv/bin/activate && python -m sitemap_fetcher.main https://www.thenational.academy/sitemap.xml urls.txt
+	. venv/bin/activate && python -m sitemap_fetcher.main https://www.thenational.academy/sitemap.xml ./output/urls.txt
 
 resume:
-	. venv/bin/activate && python -m sitemap_fetcher.main https://www.thenational.academy/sitemap.xml urls.txt --resume
+	. venv/bin/activate && python -m sitemap_fetcher.main https://www.thenational.academy/sitemap.xml ./output/urls.txt --resume
 
 demo:
 	. venv/bin/activate && python -m sitemap_fetcher.main https://www.thenational.academy/sitemap.xml ./output/urls.txt -n 20
