@@ -1,7 +1,7 @@
 import xml.etree.ElementTree as ET
-
 import pytest
 import requests
+from unittest.mock import patch
 
 from sitemap_fetcher.fetcher import SitemapFetcher
 
@@ -32,3 +32,47 @@ def test_fetcher_fetch_sitemap_bad_xml(patch_requests):
     fetcher = SitemapFetcher()
     with pytest.raises(ET.ParseError):
         fetcher.fetch_sitemap("http://badxml.com/sitemap.xml")
+
+
+# --- New Tests ---
+
+
+@patch("requests.get")
+def test_fetcher_timeout(mock_get):
+    """Tests that the fetcher passes the timeout to requests.get."""
+    # Configure the mock to return a basic valid response
+    mock_response = requests.Response()
+    mock_response.status_code = 200
+    mock_response._content = b'<?xml version="1.0"?><root />'
+    mock_get.return_value = mock_response
+
+    # Test default timeout
+    fetcher_default = SitemapFetcher()
+    fetcher_default.fetch_sitemap("http://test.com/sitemap.xml")
+    mock_get.assert_called_with("http://test.com/sitemap.xml", timeout=30)
+
+    # Test custom timeout
+    fetcher_custom = SitemapFetcher(timeout=15)
+    fetcher_custom.fetch_sitemap("http://test.com/sitemap.xml")
+    mock_get.assert_called_with("http://test.com/sitemap.xml", timeout=15)
+
+
+def test_fetcher_fetch_sitemap_utf8_fallback(patch_requests):
+    """Tests SitemapFetcher handles XML with BOM via UTF-8 fallback."""
+    fetcher = SitemapFetcher()
+    # This URL is configured in conftest.py to return XML with a BOM
+    root = fetcher.fetch_sitemap("http://bom.com/sitemap.xml")
+    assert root is not None
+    assert len(root.findall(".//{http://www.sitemaps.org/schemas/sitemap/0.9}url")) == 1
+    assert (
+        root.findtext(".//{http://www.sitemaps.org/schemas/sitemap/0.9}loc")
+        == "http://bom.com/page1"
+    )
+
+
+def test_fetcher_fetch_sitemap_http_error(patch_requests):
+    """Tests SitemapFetcher handles HTTP errors (e.g., 404 Not Found)."""
+    fetcher = SitemapFetcher()
+    with pytest.raises(requests.exceptions.HTTPError):
+        # This URL is configured in conftest.py to return a 404
+        fetcher.fetch_sitemap("http://notfound.com/sitemap.xml")

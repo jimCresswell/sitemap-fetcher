@@ -2,11 +2,13 @@
   "python.languageServer": "None",
   "python.analysis.diagnosticMode": "workspace",
   "cSpell.words": [
+    "addopts",
     "capsys",
     "htmlcov",
     "maxfail",
     "monkeypatching",
     "mypy",
+    "pycache",
     "pylint",
     "pytest",
     "resp",

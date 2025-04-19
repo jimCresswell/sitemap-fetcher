@@ -12,6 +12,7 @@ import requests
 # Assuming fetcher and parser are in the same directory or package
 from .fetcher import SitemapFetcher
 from .parser import SitemapParser
+from .state_manager import StateManager
 
 
 @dataclass
@@ -32,15 +33,32 @@ class ProcessorConfig:
 
 
 class SitemapProcessor:
-    """Orchestrates the fetching, parsing, and processing of sitemaps."""
+    """Orchestrates the fetching, parsing, and processing of sitemaps.
 
-    def __init__(self, config: ProcessorConfig):
-        """Initializes the SitemapProcessor with a configuration object."""
+    The class now supports *dependency injection* for the fetcher and parser
+    components, which enables simpler unit‑testing (you can pass lightweight
+    mocks instead of patching at the module level):
+
+    >>> mock_fetcher = Mock(fetch_sitemap=lambda url: xml_root)
+    >>> processor = SitemapProcessor(cfg, fetcher=mock_fetcher)
+    """
+
+    def __init__(
+        self,
+        config: ProcessorConfig,
+        *,
+        fetcher: Optional[SitemapFetcher] = None,
+        parser: Optional[SitemapParser] = None,
+    ):
         self.config = config
 
-        # Initialize components based on config
-        self.fetcher = SitemapFetcher(timeout=self.config.fetcher_timeout)
-        self.parser = SitemapParser()
+        # Use injected dependencies or fall back to concrete implementations
+        self.fetcher = (
+            fetcher
+            if fetcher is not None
+            else SitemapFetcher(timeout=self.config.fetcher_timeout)
+        )
+        self.parser = parser if parser is not None else SitemapParser()
 
         # State variables (kept separate from config)
         self.sitemap_queue: List[str] = []
@@ -57,8 +75,7 @@ class SitemapProcessor:
             "found_urls": list(self.found_urls),
         }
         try:
-            with open(self.config.state_file, "w", encoding="utf-8") as f:
-                json.dump(state, f, indent=4)
+            StateManager.save_state(self.config.state_file, state)
             print(f"Saved state to {self.config.state_file}")
         except IOError as e:
             print(
@@ -75,28 +92,7 @@ class SitemapProcessor:
             return
 
         try:
-            with open(self.config.state_file, "r", encoding="utf-8") as f:
-                state = json.load(f)
-
-            # Validate structure and types before assignment
-            if not isinstance(state, dict):
-                raise ValueError("State data is not a dictionary")
-
-            # Check for required keys and validate types
-            required_keys = {
-                "sitemap_queue": list,
-                "processed_sitemaps": list,
-                "found_urls": list,
-            }
-            for key, expected_type in required_keys.items():
-                if key not in state:
-                    raise KeyError(f"Missing required key in state: {key}")
-                if not isinstance(state[key], expected_type):
-                    expected = expected_type.__name__
-                    actual = type(state[key]).__name__
-                    raise ValueError(
-                        f"Invalid type for key '{key}': expected {expected}, got {actual}"
-                    )
+            state = StateManager.load_state(self.config.state_file)
 
             # Assign validated state
             self.sitemap_queue = state["sitemap_queue"]

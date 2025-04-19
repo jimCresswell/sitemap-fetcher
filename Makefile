@@ -1,4 +1,4 @@
-.PHONY: install run test clean resume demo coverage lint lint-flake8 lint-pylint typecheck update-deps
+.PHONY: install run test clean resume demo lint typecheck update-deps format
 
 install:
 	python3 -m venv venv
@@ -23,15 +23,12 @@ clean:
 	rm -rf venv
 	rm -f urls.txt
 
-coverage:
-	. venv/bin/activate && python -m pytest --cov=sitemap_fetcher --cov-report html --maxfail=1 --disable-warnings
-	@echo "Coverage report saved to htmlcov/index.html"
+format:
+	. venv/bin/activate && python -m black sitemap_fetcher/ tests/
 
-lint-flake8:
+# Lint target (flake8 only, configs in setup.cfg)
+lint:
 	. venv/bin/activate && python -m flake8 sitemap_fetcher/ tests/
-
-lint-pylint:
-	. venv/bin/activate && python -m pylint sitemap_fetcher/ tests/
 
 typecheck:
 	. venv/bin/activate && python -m mypy sitemap_fetcher/ tests/

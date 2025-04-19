@@ -50,3 +50,20 @@ def test_parser_extract_loc_elements():
     empty_xml = "<root />"
     empty_root = ET.fromstring(empty_xml)
     assert parser.extract_loc_elements(empty_root) == []
+
+    # Test with empty/missing loc text
+    mixed_loc_xml = """<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+                         <url><loc>http://example.com/page_valid.html</loc></url>
+                         <url><loc></loc></url>
+                         <url><loc/></url>
+                         <url><loc>  </loc></url> <!-- Test whitespace-only -->
+                         <url><loc>http://example.com/another_valid.html</loc></url>
+                       </urlset>"""
+    mixed_loc_root = ET.fromstring(mixed_loc_xml)
+    # The filter `if loc.text` should exclude empty strings "", None, but include whitespace "  "
+    expected_mixed_locs = [
+        "http://example.com/page_valid.html",
+        "  ",  # Whitespace is treated as valid text by the filter
+        "http://example.com/another_valid.html",
+    ]
+    assert parser.extract_loc_elements(mixed_loc_root) == expected_mixed_locs
