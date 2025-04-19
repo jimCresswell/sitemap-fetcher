@@ -57,15 +57,15 @@ Focus on covering the remaining missed lines and ensuring robust interaction bet
 
 ### Step 4.4: Investigate Linting Configuration Consolidation
 
-- **Analyze Rulesets:** Compare enabled/disabled rules in `.flake8` and `.pylintrc`.
+- **Analyze Rulesets:** Compare enabled/disabled rules in `setup.cfg`.
 - **Identify Overlap/Gaps:** Determine if rulesets are redundant or if one tool could effectively replace the other for this project's needs without sacrificing important checks.
 - **Evaluate Alternatives:** Consider if a single linter (potentially with plugins) or a different combination could simplify the setup.
 - **Goal:** Simplify the linting setup if possible while maintaining high code quality standards.
 
 ### Step 4.5: Ensure Formatter/Linter Alignment
 
-- **Check Conflicts:** Verify that running `black` (via `pyproject.toml` config) doesn't introduce code style changes that subsequently fail `flake8` or `pylint` checks.
-- **Review Configurations:** Examine `pyproject.toml`, `.flake8`, and `.pylintrc` for conflicting rules (e.g., line length, quote style).
+- **Check Conflicts:** Verify that running `black` doesn't introduce code style changes that subsequently fail `flake8` checks.
+- **Review Configurations:** Examine `setup.cfg` for conflicting rules (e.g., line length, quote style).
 - **Adjust Configs:** Modify configurations as needed to ensure linters accept `black`-formatted code.
 
 ### Step 4.6: Investigate Further Code Structure Improvements
@@ -83,8 +83,8 @@ Focus on covering the remaining missed lines and ensuring robust interaction bet
 ## 5. Tools
 
 - `pytest`, `pytest-cov`, `pytest-mock`
-- `pylint`, `flake8`, `mypy`, `black`
-- Coverage reports (`term-missing`, `html`)
+- `flake8`, `mypy`, `black`
+- Coverage reports (`term`)
 
 ## 6. Success Metrics
 

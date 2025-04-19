@@ -17,9 +17,7 @@ Sitemap URL Fetcher is a command-line tool that takes a root sitemap URL, recurs
   - `conftest.py`: Contains shared pytest fixtures (e.g., mocking HTTP requests).
 - **`Makefile`**: Defines commands for installation, running, testing, linting, type checking, and cleaning.
 - **`requirements.txt`**: Lists Python dependencies.
-- **`.flake8`**: Configuration file for the flake8 linter.
-- **`.pylintrc`**: Configuration file for the pylint linter.
-- **`pyproject.toml`**: Configuration file for the black formatter.
+- **`setup.cfg`**: Configuration file for the black formatter.
 
 ## Dependencies
 
@@ -31,7 +29,6 @@ Sitemap URL Fetcher is a command-line tool that takes a root sitemap URL, recurs
 - `pytest-cov` >= 6.1.1
 - `pytest-mock` >= 3.14.0
 - `flake8` >= 7.2.0
-- `pylint` >= 3.3.6
 - `mypy` >= 1.15.0
 - `black` (formatter - typically used via editor integration or pre-commit hook)
 
@@ -51,16 +48,14 @@ python -m sitemap_fetcher.main <start_sitemap_url> <output_file> [options]
 
 ```bash
 make test      # Run tests with coverage reporting (text summary)
-make coverage  # Run tests and generate HTML coverage report
 ```
 
 ## Linting & Type Checking
 
 ```bash
-make lint       # Run flake8 and pylint
-make lint-flake8 # Run only flake8
-make lint-pylint # Run only pylint
-make typecheck  # Run mypy
+make lint
+make typecheck
+make format
 ```
 
 ## Project Structure
@@ -99,3 +94,4 @@ Makefile
 README.md
 requirements.txt
 pyproject.toml
+```

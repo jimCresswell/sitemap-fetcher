@@ -76,86 +76,28 @@ Run the full test suite, including coverage reporting, using the Makefile:
 make test
 ```
 
-To generate an HTML coverage report:
-
-```bash
-make coverage
-```
-
 (Requires `pytest`, `pytest-cov`, `pytest-mock`, and `python-dotenv`, installed via `make install`)
 
 ### Current Quality Snapshot (Apr 2025)
 
-| Metric | Value |
-| ------ | ----- |
-| Unit / integration tests | **34** |
-| Line coverage (via `pytest‑cov`) | **≈96 %** |
-| Quality gates | All tests, `flake8`, `pylint`, `mypy` pass via Makefile |
+| Metric                           | Value                                         |
+| -------------------------------- | --------------------------------------------- |
+| Unit / integration tests         | **34**                                        |
+| Line coverage (via `pytest‑cov`) | **≈96 %**                                     |
+| Quality gates                    | All tests, `flake8`, `mypy` pass via Makefile |
 
 ## Linting & Type Checking
 
-This project uses `black` for formatting, `flake8` and `pylint` for linting, and `mypy` for type checking.
+This project uses `black` for formatting, `flake8` for linting, and `mypy` for type checking.
 
 Configuration files:
 
-- `.flake8`: Configures flake8 rules.
-- `.pylintrc`: Configures pylint rules.
-- `pyproject.toml`: Configures black formatting rules.
+- `setup.cfg`
 
 Run checks using the Makefile:
 
 ```bash
-make lint       # Run both flake8 and pylint on the sitemap_fetcher module and tests
-make lint-flake8 # Run only flake8
-make lint-pylint # Run only pylint
+make lint       # Run flake8 on the sitemap_fetcher module and tests
 make typecheck  # Run mypy on the sitemap_fetcher module and tests
+make format     # Run black on the sitemap_fetcher module and tests
 ```
-
-## (Optional) Makefile
-
-The Makefile provides convenient shortcuts for common tasks.
-
-```makefile
-# Simplified Makefile snippet (see full file for details)
-.PHONY: install run test clean resume demo coverage lint lint-flake8 lint-pylint typecheck update-deps
-
-install:
-    python3 -m venv venv
-    . venv/bin/activate && pip install -r requirements.txt
-
-update-deps:
-    . venv/bin/activate && pur -r requirements.txt && make install
-
-run:
-    . venv/bin/activate && python -m sitemap_fetcher.main https://www.thenational.academy/sitemap.xml ./output/urls.txt
-
-resume:
-    . venv/bin/activate && python -m sitemap_fetcher.main https://www.thenational.academy/sitemap.xml ./output/urls.txt --resume
-
-demo:
-    . venv/bin/activate && python -m sitemap_fetcher.main https://www.thenational.academy/sitemap.xml ./output/urls.txt -n 20 # Example using -n alias
-
-test:
-    . venv/bin/activate && python -m pytest --cov=sitemap_fetcher --cov-report term-missing
-
-coverage:
-    . venv/bin/activate && python -m pytest --cov=sitemap_fetcher --cov-report html
-    @echo "Coverage report saved to htmlcov/index.html"
-
-lint-flake8:
-    . venv/bin/activate && flake8 sitemap_fetcher/ tests/
-
-lint-pylint:
-    . venv/bin/activate && pylint sitemap_fetcher/ tests/
-
-lint: lint-flake8 lint-pylint
-
-typecheck:
-    . venv/bin/activate && mypy sitemap_fetcher/ tests/
-
-clean:
-    rm -rf venv
-    rm -f urls.txt urls.txt.state.json
-    rm -rf htmlcov .pytest_cache .mypy_cache
-    find . -type f -name '*.pyc' -delete
-    find . -type d -name '__pycache__' -delete

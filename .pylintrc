@@ -1,8 +1,0 @@
-[MAIN]
-py-version = 3.11
-
-[MESSAGES CONTROL]
-disable=missing-module-docstring,missing-class-docstring,missing-function-docstring,redefined-outer-name,trailing-newlines,invalid-name,unused-argument,too-few-public-methods,too-many-return-statements
-
-[FORMAT]
-max-line-length=110 # Match black's default line length

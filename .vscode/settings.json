@@ -4,6 +4,7 @@
   "cSpell.words": [
     "addopts",
     "capsys",
+    "dataclass",
     "dotenv",
     "htmlcov",
     "maxfail",
@@ -13,7 +14,8 @@
     "pylint",
     "pytest",
     "resp",
-    "venv"
+    "venv",
+    "virtualenv"
   ],
   "[python]": {
     "editor.formatOnSave": true,
