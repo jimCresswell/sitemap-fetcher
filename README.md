@@ -1,5 +1,7 @@
 # Sitemap URL Fetcher
 
+A command-line tool to recursively fetch all unique page URLs from a starting XML sitemap. It supports resuming interrupted runs, limiting the number of URLs fetched, configurable request throttling, and a custom User-Agent.
+
 ## Prerequisites
 
 - Python 3.7+ installed on your system
@@ -20,6 +22,24 @@ make install
 # 2. Install dependencies
 # pip install -r requirements.txt
 ```
+
+## Configuration (`.env` file)
+
+This tool uses a `.env` file in the project root for configuration. Create a `.env` file by copying `.env.example`:
+
+```bash
+cp .env.example .env
+```
+
+Then edit `.env` with your desired values:
+
+```dotenv
+# .env
+EMAIL=your.email@example.com # Used in the User-Agent header for identification
+REQUEST_INTERVAL_SECONDS=2   # Minimum seconds between requests (default: 2)
+```
+
+The User-Agent will be set to `Sitemap Fetcher: (+EMAIL)` if EMAIL is provided, otherwise just `Sitemap Fetcher`. Requests are automatically throttled to wait at least `REQUEST_INTERVAL_SECONDS` between fetches.
 
 ## Usage
 
@@ -62,14 +82,14 @@ To generate an HTML coverage report:
 make coverage
 ```
 
-(Requires `pytest` and `pytest-cov`, installed via `make install`)
+(Requires `pytest`, `pytest-cov`, `pytest-mock`, and `python-dotenv`, installed via `make install`)
 
 ### Current Quality Snapshot (Apr 2025)
 
 | Metric | Value |
 | ------ | ----- |
-| Unit / integration tests | **24** |
-| Line coverage (via `pytest‑cov`) | **≈94 %** |
+| Unit / integration tests | **34** |
+| Line coverage (via `pytest‑cov`) | **≈96 %** |
 | Quality gates | All tests, `flake8`, `pylint`, `mypy` pass via Makefile |
 
 ## Linting & Type Checking
@@ -107,19 +127,19 @@ update-deps:
     . venv/bin/activate && pur -r requirements.txt && make install
 
 run:
-    . venv/bin/activate && python -m sitemap_fetcher.main https://www.thenational.academy/sitemap.xml urls.txt
+    . venv/bin/activate && python -m sitemap_fetcher.main https://www.thenational.academy/sitemap.xml ./output/urls.txt
 
 resume:
-    . venv/bin/activate && python -m sitemap_fetcher.main https://www.thenational.academy/sitemap.xml urls.txt --resume
+    . venv/bin/activate && python -m sitemap_fetcher.main https://www.thenational.academy/sitemap.xml ./output/urls.txt --resume
 
 demo:
-    . venv/bin/activate && python -m sitemap_fetcher.main https://www.thenational.academy/sitemap.xml urls.txt --limit 10
+    . venv/bin/activate && python -m sitemap_fetcher.main https://www.thenational.academy/sitemap.xml ./output/urls.txt -n 20 # Example using -n alias
 
 test:
-    . venv/bin/activate && python -m pytest --cov=sitemap_fetcher --cov-report term-missing --maxfail=1 --disable-warnings
+    . venv/bin/activate && python -m pytest --cov=sitemap_fetcher --cov-report term-missing
 
 coverage:
-    . venv/bin/activate && python -m pytest --cov=sitemap_fetcher --cov-report html --maxfail=1 --disable-warnings
+    . venv/bin/activate && python -m pytest --cov=sitemap_fetcher --cov-report html
     @echo "Coverage report saved to htmlcov/index.html"
 
 lint-flake8:
