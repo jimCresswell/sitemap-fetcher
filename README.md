@@ -64,6 +64,14 @@ make coverage
 
 (Requires `pytest` and `pytest-cov`, installed via `make install`)
 
+### Current Quality Snapshot (Apr 2025)
+
+| Metric | Value |
+| ------ | ----- |
+| Unit / integration tests | **24** |
+| Line coverage (via `pytest‑cov`) | **≈94 %** |
+| Quality gates | All tests, `flake8`, `pylint`, `mypy` pass via Makefile |
+
 ## Linting & Type Checking
 
 This project uses `black` for formatting, `flake8` and `pylint` for linting, and `mypy` for type checking.

@@ -7,11 +7,10 @@ To achieve high test coverage (target >90-95%) for the `sitemap_fetcher` package
 ## 2. Current State (Post-Refactor)
 
 - **Code Structure:** Refactored into a `sitemap_fetcher` package with modules (`main.py`, `processor.py`, `fetcher.py`, `parser.py`) and classes (`SitemapProcessor`, `ProcessorConfig`).
-- **Tests:** 16 tests passing, located in `tests/`. Basic functionality of modules and `SitemapProcessor` integration is covered.
-- **Coverage:** Currently at 88% (via `make test`).
-  - Missed lines primarily in `processor.py` (signal handler logic, some state loading/saving edge cases, error handling branches) and `main.py` (argument parsing variations, final error handling).
-- **Linting:** `flake8` and `pylint` checks pass using `make lint`.
-- **Type Checking:** `mypy` checks pass using `make typecheck`.
+- **Tests:** **24** tests passing (`pytest`). Coverage now includes detailed signal‑handling scenarios.
+- **Coverage:** **94 %** line coverage (`make test`).
+  - Remaining missed lines are mostly minor branches in `processor.py` (rare errors) and `main.py` (CLI error paths).
+- **Quality Gates:** All linters (`flake8`, `pylint`), formatter (`black`), and static typing (`mypy`) pass via Makefile targets.
 - **Dependencies:** Includes `pytest`, `pytest-cov`, `pytest-mock`.
 
 ## 3. Completed Steps (from previous plan)
@@ -21,6 +20,7 @@ To achieve high test coverage (target >90-95%) for the `sitemap_fetcher` package
 - **Improve Initial Test Documentation:** DONE (Docstrings added during refactoring).
 - **Code Refactoring:** DONE (Split into modules/classes).
 - **Add Initial Error Handling Tests:** DONE (Tests added for invalid state JSON/data, output IOError, URL limit).
+- **Add Signal Handling & State‑edge Tests:** DONE (added complex signal interruption tests; overall coverage now >90%).
 
 ## 4. Proposed Next Steps
 
