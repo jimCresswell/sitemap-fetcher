@@ -12,8 +12,8 @@ file placed in the project root:
 
 ```env
 # .env
-EMAIL=webmaster@thenational.academy
-REQUEST_INTERVAL=2.5
+EMAIL=someone@example.com
+REQUEST_INTERVAL_SECONDS=2
 ```
 
 The variables are loaded via *python‑dotenv*.
@@ -33,8 +33,11 @@ from dotenv import load_dotenv
 # Load variables from .env if present; silently ignore missing file
 load_dotenv()
 
-_DEFAULT_EMAIL = os.getenv("EMAIL", "contact@example.com")
-_DEFAULT_USER_AGENT = f"Oak Sitemap Fetcher (+{_DEFAULT_EMAIL})"
+_DEFAULT_EMAIL = os.getenv("EMAIL")
+if _DEFAULT_EMAIL:
+    _DEFAULT_USER_AGENT = f"Sitemap Fetcher: (+{_DEFAULT_EMAIL})"
+else:
+    _DEFAULT_USER_AGENT = "Sitemap Fetcher"
 # Delay between requests in seconds (float allowed for sub‑second resolution)
 _DEFAULT_REQUEST_INTERVAL = float(os.getenv("REQUEST_INTERVAL_SECONDS", "2"))
 

@@ -4,6 +4,7 @@
   "cSpell.words": [
     "addopts",
     "capsys",
+    "dotenv",
     "htmlcov",
     "maxfail",
     "monkeypatching",
