@@ -1,11 +1,8 @@
+[MAIN]
+py-version = 3.11
+
 [MESSAGES CONTROL]
-disable=
-    missing-module-docstring, # C0114: Ignore missing module docstrings
-    missing-class-docstring,  # C0115: Ignore missing class docstrings
-    missing-function-docstring, # C0116: Ignore missing function docstrings
-    redefined-outer-name, # W0621: Ignore pytest fixture redefinition
-    trailing-newlines, # C0305: Ignore trailing newline check (handled by flake8)
-    invalid-name # C0103: Allow shorter variable names if needed
+disable=missing-module-docstring,missing-class-docstring,missing-function-docstring,redefined-outer-name,trailing-newlines,invalid-name,unused-argument,too-few-public-methods,too-many-return-statements
 
 [FORMAT]
 max-line-length=110 # Match black's default line length

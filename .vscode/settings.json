@@ -2,6 +2,7 @@
   "python.languageServer": "None",
   "python.analysis.diagnosticMode": "workspace",
   "cSpell.words": [
+    "capsys",
     "htmlcov",
     "maxfail",
     "monkeypatching",

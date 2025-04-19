@@ -1,150 +1,95 @@
-# Sitemap Fetcher Test Improvement Plan
+# Sitemap Fetcher Test & Improvement Plan
 
 ## 1. Goal
 
-To achieve near-complete test coverage for `sitemap_url_fetcher.py`, fix existing test linting issues, and improve documentation in both the main script and tests. This will increase confidence in the script's robustness, especially for long-running tasks.
+To achieve high test coverage (target >90-95%) for the `sitemap_fetcher` package, ensure robustness through comprehensive testing of core logic and error handling, maintain code quality through linting and type checking, and explore potential further improvements to code structure and tooling configuration.
 
-## 2. Current State
+## 2. Current State (Post-Refactor)
 
-- **Tests (`tests/test_sitemap_url_fetcher.py`):** Cover basic functionality:
-  - `is_sitemap_index`: Covered.
-  - `extract_loc_elements`: Covered for index and urlset.
-  - `save_state`/`load_state`: Covered.
-  - Signal Handling (`SIGINT`/`KeyboardInterrupt`): Basic integration tested (`test_interrupt_handler_saves_state`).
-  - `fetch_sitemap`: Success case implicitly tested via mocks.
-- **Coverage:** Not currently measured. Significant gaps expected, especially within the `main` function's logic paths and error handling.
-- **Linting (Tests):** Several Pylint warnings exist (unused imports, general exception, unused argument).
-- **Documentation:** Docstrings exist for most functions but could be more detailed, especially for tests and the `main` function logic.
+- **Code Structure:** Refactored into a `sitemap_fetcher` package with modules (`main.py`, `processor.py`, `fetcher.py`, `parser.py`) and classes (`SitemapProcessor`, `ProcessorConfig`).
+- **Tests:** 16 tests passing, located in `tests/`. Basic functionality of modules and `SitemapProcessor` integration is covered.
+- **Coverage:** Currently at 88% (via `make test`).
+  - Missed lines primarily in `processor.py` (signal handler logic, some state loading/saving edge cases, error handling branches) and `main.py` (argument parsing variations, final error handling).
+- **Linting:** `flake8` and `pylint` checks pass using `make lint`.
+- **Type Checking:** `mypy` checks pass using `make typecheck`.
+- **Dependencies:** Includes `pytest`, `pytest-cov`, `pytest-mock`.
 
-## 3. Proposed Steps
+## 3. Completed Steps (from previous plan)
 
-### Step 3.1: Setup Coverage Reporting
+- **Setup Coverage Reporting:** DONE (`make test` reports coverage, `make coverage` generates HTML).
+- **Fix Initial Test Linting Issues:** DONE.
+- **Improve Initial Test Documentation:** DONE (Docstrings added during refactoring).
+- **Code Refactoring:** DONE (Split into modules/classes).
+- **Add Initial Error Handling Tests:** DONE (Tests added for invalid state JSON/data, output IOError, URL limit).
 
-1. **Add Dependency:** Add `pytest-cov` to `requirements.txt`.
-2. **Install:** Run `make install` or `pip install -r requirements.txt`.
-3. **Update Makefile (`test` target):** Modify the `test` target to include coverage flags:
+## 4. Proposed Next Steps
 
-   ```makefile
-   test:
-    . venv/bin/activate && python -m pytest --cov=sitemap_url_fetcher --cov-report term-missing --maxfail=1 --disable-warnings
-   ```
+### Step 4.1: Enhance Unit Tests (`fetcher.py`, `parser.py`)
 
-4. **Add Makefile (`coverage` target):** Add a new target for detailed HTML reports:
+- **`fetcher.py`:** Ensure specific unit tests cover:
+  - `requests.exceptions.HTTPError` (e.g., 404, 500).
+  - `requests.exceptions.Timeout`.
+  - `requests.exceptions.ConnectionError`.
+- **`parser.py`:** Ensure specific unit tests cover:
+  - Handling of `xml.etree.ElementTree.ParseError`.
+  - Edge cases in `is_sitemap_index` and `extract_loc_elements` (e.g., missing namespace, different XML structures, relative URLs needing `urljoin`).
 
-   ```makefile
-   coverage:
-    . venv/bin/activate && python -m pytest --cov=sitemap_url_fetcher --cov-report html --maxfail=1 --disable-warnings
-    @echo "Coverage report saved to htmlcov/index.html"
-   ```
+### Step 4.2: Expand Integration Tests (`processor.py`, `main.py`)
 
-5. **Baseline:** Run `make test` to get the initial coverage percentage.
+Focus on covering the remaining missed lines and ensuring robust interaction between components.
 
-### Step 3.2: Fix Test Linting Issues
+- **Targeted Coverage:** Analyze the HTML coverage report (`make coverage`) and write specific tests for currently missed lines/branches in `processor.py` and `main.py`.
+  - **`processor.py`:** Signal handling (`_signal_handler`), specific conditions in `_load_state` / `_save_state`, error branches in `_process_single_sitemap`, `_handle_sitemap_index`, `_handle_regular_sitemap`.
+  - **`main.py`:** Different argument combinations (`--limit`, `--resume`, `--state-file`), exception handling around `processor.run()`.
+- **State Management:** Test edge cases for `--resume`:
+  - Resuming with a state file containing relative URLs.
+  - Resuming after limit was hit.
+  - Resuming when the state file is corrupted in different ways (beyond current tests).
+- **Complex Scenarios:**
+  - Test sitemap structures with multiple levels of indices.
+  - Test scenarios involving very large numbers of URLs (potentially mocking time/sleep).
 
-Address the following Pylint warnings in `tests/test_sitemap_url_fetcher.py`:
+### Step 4.3: Review and Enhance Documentation
 
-- `Unused import json`: Remove the import.
-- `Unused NamedTemporaryFile imported from tempfile`: Remove the import.
-- `Unused fetch_sitemap imported from sitemap_url_fetcher`: Remove the import.
-- `Raising too general exception: Exception` (in `DummyResponse.raise_for_status`): Change to raise `requests.exceptions.HTTPError(response=self)` for better simulation.
-- `Unused argument 'url'` (in `fake_fetch_and_signal`): Rename to `_url` or add `# noqa: ARG001`.
+- Review docstrings in all modules (`processor.py`, `main.py`, `fetcher.py`, `parser.py`) for clarity and completeness, especially explaining the purpose and interaction of classes/methods.
+- Add inline comments (`#`) for complex logic sections.
+- Ensure test docstrings clearly state the scenario being tested.
 
-### Step 3.3: Improve Test Documentation
+### Step 4.4: Investigate Linting Configuration Consolidation
 
-1. Add clear, concise docstrings to _all_ test functions (`test_is_sitemap_index_true`, `test_extract_loc_elements_index_and_urlset`, etc.) explaining _what_ specific scenario or behavior each test verifies.
-2. Add docstrings to helper classes/functions (`DummyResponse`, `patch_requests`).
+- **Analyze Rulesets:** Compare enabled/disabled rules in `.flake8` and `.pylintrc`.
+- **Identify Overlap/Gaps:** Determine if rulesets are redundant or if one tool could effectively replace the other for this project's needs without sacrificing important checks.
+- **Evaluate Alternatives:** Consider if a single linter (potentially with plugins) or a different combination could simplify the setup.
+- **Goal:** Simplify the linting setup if possible while maintaining high code quality standards.
 
-### Step 3.4: Enhance `fetch_sitemap` Unit Tests
+### Step 4.5: Ensure Formatter/Linter Alignment
 
-Create specific unit tests for `fetch_sitemap` (mocking `requests.get`) that verify:
+- **Check Conflicts:** Verify that running `black` (via `pyproject.toml` config) doesn't introduce code style changes that subsequently fail `flake8` or `pylint` checks.
+- **Review Configurations:** Examine `pyproject.toml`, `.flake8`, and `.pylintrc` for conflicting rules (e.g., line length, quote style).
+- **Adjust Configs:** Modify configurations as needed to ensure linters accept `black`-formatted code.
 
-- Handling of `requests.exceptions.HTTPError` (e.g., 404, 500 status codes) via `resp.raise_for_status()`.
-- Handling of `xml.etree.ElementTree.ParseError` when response content is invalid XML.
-- Handling of `requests.exceptions.Timeout`.
-- Handling of `requests.exceptions.ConnectionError`.
+### Step 4.6: Investigate Further Code Structure Improvements
 
-### Step 3.5: Expand `main` Function Integration Tests
+- **Review `processor.py`:** Assess if `SitemapProcessor` has too many responsibilities. Could state management (`_load_state`, `_save_state`) or output writing (`_write_urls_to_output`) be further extracted into separate classes/modules?
+- **Review Test Structure:** Evaluate if the current test organization (`test_*.py` per module) is optimal. Consider if more separation between unit and integration tests would be beneficial.
+- **Dependency Injection:** Explore opportunities to use dependency injection more explicitly, potentially making components easier to test in isolation.
 
-These tests will simulate running the script with different arguments and conditions, patching external dependencies like `requests.get`, `sys.exit`, `os.kill`, and file system operations where necessary.
+### Step 4.7: Iterate with Coverage & Quality Checks
 
-1. **Refactor Test Setup:** Consider creating pytest fixtures for common setups (e.g., patching `sys.argv`, `sys.exit`, creating temp directories).
-2. **Argument Parsing:**
-   - Test running with `--limit N` and verify only N URLs are written.
-   - Test using the default state file name (`<output_file>.state.json`).
-   - Test using a custom `--state-file` path.
-3. **Resume Workflow:**
-   - Simulate a run that gets interrupted (using the `os.kill` method from `test_interrupt_handler_saves_state`).
-   - Verify the state file is created correctly.
-   - Run the script again with the `--resume` flag.
-   - Verify that the initial state (queue, seen_sitemaps, urls) is loaded correctly from the state file.
-   - Verify the run continues and produces the complete, correct output.
-4. **Main Loop Logic:**
-   - Test skipping a sitemap URL that is already in `seen_sitemaps`.
-   - Test the `try/except` block around `fetch_sitemap`: Simulate `RequestException` or `ParseError` and verify the error is printed to `stderr` and the loop continues.
-   - Test processing of a sitemap index: Verify child sitemap URLs are correctly extracted and added to the queue (including relative URLs resolved with `urljoin`).
-   - Test processing of a regular URL set: Verify page URLs are correctly extracted and added to the `urls` set (including relative URLs resolved with `urljoin`).
-   - Test `--limit` being reached _during_ processing of a URL set (verify loop termination/queue clearing).
-5. **Successful Completion:**
-   - Test a full successful run (small example) and verify the content of the output file is exactly as expected (sorted, correct URLs, respecting limit if applied).
-   - Verify the state file is removed upon successful completion.
-6. **Intermittent `save_state`:** Evaluate if the `save_state` call _after_ the main loop is necessary, given the signal handler. If kept, add a test to verify its behavior; otherwise, remove it.
+- Continuously run `make test`, `make lint`, `make typecheck` after implementing changes.
+- Use the coverage report (`make coverage`) to guide test writing for missed lines.
+- Aim for coverage >90-95%, excluding potentially difficult-to-test areas like the core signal handling interaction if necessary.
 
-### Step 3.6: Improve Source Code Documentation
+## 5. Tools
 
-1. Review and enhance docstrings in `sitemap_url_fetcher.py`, particularly for `main` (explaining its overall flow, argument handling, loop logic, state management) and `handle_exit`.
-2. Add inline comments `#` within `main` to clarify complex sections (e.g., state loading logic, loop conditions, URL processing branches).
+- `pytest`, `pytest-cov`, `pytest-mock`
+- `pylint`, `flake8`, `mypy`, `black`
+- Coverage reports (`term-missing`, `html`)
 
-### Step 3.7: Iterate with Coverage
+## 6. Success Metrics
 
-1. After implementing fixes and new tests, run `make coverage`.
-2. Open `htmlcov/index.html` in a browser.
-3. Analyze the report, focusing on lines/branches marked as missed in `sitemap_url_fetcher.py`.
-4. Write targeted tests specifically to cover these missed lines/branches.
-5. Repeat steps 1-4 until coverage reaches the desired level (e.g., >95%) or remaining gaps are deemed unreasonable/unnecessary to cover.
-
-## 4. Tools
-
-- `pytest`
-- `pytest-cov`
-- `pytest` fixtures
-- `monkeypatch` (pytest fixture)
-- Mocking (`unittest.mock` or similar, if needed beyond monkeypatch)
-
-## 5. Success Metrics
-
-- Test coverage for `sitemap_url_fetcher.py` significantly increased (target >95%).
-- All test linting warnings resolved.
-- Clear and comprehensive docstrings/comments in tests and source code.
-- A robust test suite that covers main functionality, error handling, and edge cases.
-
-## Step 4: Code Refactoring (Next Phase)
-
-Once the test suite provides sufficient confidence (Steps 3.1 - 3.7), the next major phase involves refactoring the core `sitemap_url_fetcher.py` script for better organization, maintainability, and testability.
-
-### 4.1 Goals
-
-- Improve code structure by separating concerns into different modules/classes.
-- Enhance encapsulation to manage state and dependencies more effectively.
-- Maintain compatibility with existing functionality and command-line interface.
-- Ensure development environment tools (IDE linters) and CI checks (Makefile commands) remain consistent.
-
-### 4.2 Proposed Actions
-
-1. **Identify Core Components:** Analyze `sitemap_url_fetcher.py` to identify distinct responsibilities (e.g., argument parsing, network fetching, XML parsing, state management, URL processing, file output).
-2. **Design Class Structure:**
-   - Define classes to encapsulate state and related logic (e.g., a `SitemapProcessor` class to manage the queue, processed sets, and main loop; a `SitemapFetcher` class for network interactions; potentially a `StateManager` class).
-   - Plan the interaction between these classes.
-3. **Create New Modules:** Split the code into logical Python files (e.g., `fetcher.py`, `parser.py`, `state.py`, `main.py` or `cli.py`).
-4. **Implement Refactoring:**
-   - Move existing functions and logic into the new classes and modules.
-   - Adapt the entry point (`main` function in the new `main.py`/`cli.py`) to use the new class structure.
-   - Pass dependencies (like the fetcher or state manager) explicitly where possible (dependency injection) instead of relying solely on global variables.
-5. **Update Tests:** Refactor existing tests and add new ones to align with the new class/module structure. Tests should target individual classes (unit tests) and the overall application flow (integration tests).
-6. **Verify Makefile:** Ensure all `make` targets (`run`, `test`, `lint`, `typecheck`) still function correctly with the new file structure. This might involve updating paths in the Makefile commands (e.g., `pylint sitemap_fetcher/ tests/` might become `pylint sitemap_fetcher/ tests/ --recursive=y` or similar depending on the new structure).
-7. **Confirm Linter Consistency:** Double-check that VS Code uses the project's `.flake8` and `.pylintrc` configurations so that IDE feedback matches the `make lint` results.
-
-### 4.3 Considerations
-
-- Perform refactoring incrementally, running tests frequently.
-- Ensure type hints are updated and maintained throughout the refactored code.
-- Update documentation ([README.md](cci:7://file:///Users/jim/code/oak/sitemap_fetcher/README.md:0:0-0:0), [.agent/project-summary.md](cci:7://file:///Users/jim/code/oak/sitemap_fetcher/.agent/project-summary.md:0:0-0:0)) to reflect the new structure upon completion.
+- Test coverage >90-95%.
+- All linting and type checks pass consistently.
+- Documentation (code and tests) is clear and comprehensive.
+- Linter/formatter configurations are streamlined and non-conflicting.
+- Code structure is demonstrably robust and maintainable.

@@ -2,21 +2,23 @@
 
 ## Project Overview
 
-Sitemap URL Fetcher is a command-line tool that takes a root sitemap URL, recursively fetches child sitemaps, and extracts all URLs to an output file.
+Sitemap URL Fetcher is a command-line tool that takes a root sitemap URL, recursively fetches child sitemaps, and extracts all unique page URLs to an output file. It supports resuming interrupted runs and limiting the number of URLs fetched.
 
 ## Key Components
 
-- **sitemap_url_fetcher.py**: Main script containing:
-  - `fetch_sitemap`: fetches and parses sitemap XML.
-  - `is_sitemap_index`: detects sitemap indexes.
-  - `extract_loc_elements`: extracts `<loc>` elements.
-  - `save_state` / `load_state`: persist and restore crawl state for resuming.
-  - `main`: orchestrates fetching, parsing, queue management, and signal handling.
-- **tests/**: Contains pytest tests validating fetching and parsing logic.
-- **Makefile**: Defines commands for installation, running, testing, linting, and type checking.
-- **requirements.txt**: Lists Python dependencies.
-- **.flake8**: Configuration file for the flake8 linter.
-- **.pylintrc**: Configuration file for the pylint linter.
+- **`sitemap_fetcher/`**: Main package directory.
+  - `__init__.py`: Makes the directory a package.
+  - `main.py`: Handles command-line argument parsing (`argparse`) and orchestrates the overall process by instantiating and running `SitemapProcessor`.
+  - `processor.py`: Defines `SitemapProcessor` class which manages the main processing loop, state (queue, processed sitemaps, found URLs), configuration (`ProcessorConfig` dataclass), signal handling, state saving/loading, and output writing.
+  - `fetcher.py`: Contains `fetch_sitemap` function for retrieving sitemap content via HTTP (`requests`) and basic error handling.
+  - `parser.py`: Contains functions (`is_sitemap_index`, `extract_loc_elements`) for parsing XML content (`xml.etree.ElementTree`) to identify sitemap types and extract relevant URLs.
+- **`tests/`**: Contains pytest tests (`test_*.py`) validating the functionality of individual components and the integrated workflow.
+  - `conftest.py`: Contains shared pytest fixtures (e.g., mocking HTTP requests).
+- **`Makefile`**: Defines commands for installation, running, testing, linting, type checking, and cleaning.
+- **`requirements.txt`**: Lists Python dependencies.
+- **`.flake8`**: Configuration file for the flake8 linter.
+- **`.pylintrc`**: Configuration file for the pylint linter.
+- **`pyproject.toml`**: Configuration file for the black formatter.
 
 ## Dependencies
 
@@ -24,29 +26,30 @@ Sitemap URL Fetcher is a command-line tool that takes a root sitemap URL, recurs
 - `requests` >= 2.32.3
 - `types-requests` >= 2.32.0
 - `pytest` >= 8.3.5
-- `pytest-cov` >= 4.0.0 (for test coverage)
-- `flake8` >= 7.0.0 (linter)
-- `pylint` >= 2.15.0 (linter - check version if needed)
-- `mypy` >= 1.8.0 (static type checker)
-- `black` (formatter - installed via editor extension or pip)
+- `pytest-cov` >= 6.1.1
+- `pytest-mock` >= 3.14.0
+- `flake8` >= 7.2.0
+- `pylint` >= 3.3.6
+- `mypy` >= 1.15.0
+- `black` (formatter - typically used via editor integration or pre-commit hook)
 
 ## Usage
 
 ```bash
-python sitemap_url_fetcher.py <start_sitemap_url> <output_file> [options]
+python -m sitemap_fetcher.main <start_sitemap_url> <output_file> [options]
 ```
 
 - `<start_sitemap_url>`: Root sitemap URL (e.g., `https://example.com/sitemap.xml`).
 - `<output_file>`: Path to write discovered URLs, one per line.
-- `-n`, `--max-urls`: Limit number of URLs for testing.
-- `--resume`: Resume from a previous state file if exists.
+- `-l`, `--limit`: Limit number of URLs to fetch.
+- `-r`, `--resume`: Resume from the state file.
+- `-s`, `--state-file`: Specify a custom state file path.
 
 ## Testing
 
 ```bash
-pytest
-make test # Includes coverage reporting
-make coverage # Generates HTML coverage report
+make test      # Run tests with coverage reporting (text summary)
+make coverage  # Run tests and generate HTML coverage report
 ```
 
 ## Linting & Type Checking
@@ -61,15 +64,33 @@ make typecheck  # Run mypy
 ## Project Structure
 
 ```text
-venv/                   # Virtual environment (gitignored)
-.agent/                 # AI agent files
-├── project-summary.md  # This summary
-├── test-improvement-plan.md # Plan for enhancing tests
-Makefile                # Build and test commands
-sitemap_url_fetcher.py  # Main CLI script
-README.md               # Usage and setup guide
-requirements.txt        # Python dependencies
-.flake8                 # Flake8 configuration
-.pylintrc              # Pylint configuration
-tests/                  # Test suite
-└── __init__.py         # Makes 'tests' a package
+.git/
+.venv/                  # Virtual environment (gitignored)
+.agent/
+├── project-summary.md # This summary
+├── test-improvement-plan.md
+├── test-improvement-prompt-generation.md
+htmlcov/                # HTML Coverage reports (gitignored)
+.pytest_cache/          # Pytest cache (gitignored)
+.mypy_cache/            # MyPy cache (gitignored)
+sitemap_fetcher/
+├── __init__.py
+├── fetcher.py
+├── main.py
+├── parser.py
+└── processor.py
+tests/
+├── __init__.py
+├── conftest.py
+├── test_fetcher.py
+├── test_main.py
+├── test_parser.py
+└── test_processor.py
+.flake8
+.gitignore
+.pylintrc
+LICENSE
+Makefile
+README.md
+requirements.txt
+pyproject.toml

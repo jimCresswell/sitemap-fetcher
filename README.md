@@ -8,52 +8,61 @@
 ## Setup
 
 ```bash
-# 1. Create & activate a virtual environment
-python3 -m venv venv
-source venv/bin/activate     # on macOS/Linux
-venv\Scripts\activate.bat    # on Windows
+# Use the Makefile for convenience
+make install
 
+# Manual steps:
+# 1. Create & activate a virtual environment
+# python3 -m venv venv
+# source venv/bin/activate     # on macOS/Linux
+# venv\Scripts\activate.bat    # on Windows
+#
 # 2. Install dependencies
-pip install -r requirements.txt
+# pip install -r requirements.txt
 ```
 
 ## Usage
 
 ```bash
-python sitemap_url_fetcher.py <start_sitemap_url> <output_file> [options]
+python -m sitemap_fetcher.main <start_sitemap_url> <output_file> [options]
 ```
 
 - `<start_sitemap_url>`: the root sitemap (e.g. `https://…/sitemap.xml`)
 - `<output_file>`: path to write all discovered URLs, one per line
 
-You can also limit for testing:
+Available options:
+
+- `-l LIMIT`, `--limit LIMIT`: Stop processing after finding LIMIT URLs.
+- `-r`, `--resume`: Resume processing from the state file (`<output_file>.state.json` by default).
+- `-s STATE_FILE`, `--state-file STATE_FILE`: Specify a custom path for the state file.
+
+Example limiting URLs:
 
 ```bash
-python sitemap_url_fetcher.py https://www.thenational.academy/sitemap.xml urls.txt -n 10
+python -m sitemap_fetcher.main https://www.thenational.academy/sitemap.xml urls.txt --limit 10
 ```
 
-To resume after interruption:
+Example resuming after interruption:
 
 ```bash
-python sitemap_url_fetcher.py https://www.thenational.academy/sitemap.xml urls.txt --resume
+python -m sitemap_fetcher.main https://www.thenational.academy/sitemap.xml urls.txt --resume
 ```
 
 ## Testing
 
-1. Make sure your virtualenv is active and deps are installed:
+Run the full test suite, including coverage reporting, using the Makefile:
 
-   ```bash
-   . venv/bin/activate # Ensure virtual environment is active
-   pip install -r requirements.txt # Install/update dependencies
-   ```
+```bash
+make test
+```
 
-2. Run tests:
+To generate an HTML coverage report:
 
-   ```bash
-   pytest
-   ```
+```bash
+make coverage
+```
 
-You can also run the test suite via `make test`.
+(Requires `pytest` and `pytest-cov`, installed via `make install`)
 
 ## Linting & Type Checking
 
@@ -61,48 +70,64 @@ This project uses `black` for formatting, `flake8` and `pylint` for linting, and
 
 Configuration files:
 
-- `.flake8`: Configures flake8 rules (e.g., max line length).
-- `.pylintrc`: Configures pylint rules (e.g., disabling specific checks, line length).
-- `pyproject.toml`: (Optional) Can be used for `black` and `mypy` configuration if needed.
+- `.flake8`: Configures flake8 rules.
+- `.pylintrc`: Configures pylint rules.
+- `pyproject.toml`: Configures black formatting rules.
 
 Run checks using the Makefile:
 
 ```bash
-make lint       # Run both flake8 and pylint
+make lint       # Run both flake8 and pylint on the sitemap_fetcher module and tests
 make lint-flake8 # Run only flake8
 make lint-pylint # Run only pylint
-make typecheck  # Run mypy
+make typecheck  # Run mypy on the sitemap_fetcher module and tests
 ```
 
 ## (Optional) Makefile
 
-For quicker setup/run/test:
+The Makefile provides convenient shortcuts for common tasks.
 
 ```makefile
-.PHONY: install run test clean lint-flake8 lint-pylint lint typecheck
+# Simplified Makefile snippet (see full file for details)
+.PHONY: install run test clean resume demo coverage lint lint-flake8 lint-pylint typecheck update-deps
 
 install:
-  python3 -m venv venv
-  . venv/bin/activate && pip install -r requirements.txt # Install dependencies
+    python3 -m venv venv
+    . venv/bin/activate && pip install -r requirements.txt
+
+update-deps:
+    . venv/bin/activate && pur -r requirements.txt && make install
 
 run:
-  . venv/bin/activate && python sitemap_url_fetcher.py <start_sitemap_url> <output_file> # Replace placeholders
+    . venv/bin/activate && python -m sitemap_fetcher.main https://www.thenational.academy/sitemap.xml urls.txt
+
+resume:
+    . venv/bin/activate && python -m sitemap_fetcher.main https://www.thenational.academy/sitemap.xml urls.txt --resume
+
+demo:
+    . venv/bin/activate && python -m sitemap_fetcher.main https://www.thenational.academy/sitemap.xml urls.txt --limit 10
 
 test:
-  . venv/bin/activate && pytest --maxfail=1 --disable-warnings -q # Run pytest
+    . venv/bin/activate && python -m pytest --cov=sitemap_fetcher --cov-report term-missing --maxfail=1 --disable-warnings
+
+coverage:
+    . venv/bin/activate && python -m pytest --cov=sitemap_fetcher --cov-report html --maxfail=1 --disable-warnings
+    @echo "Coverage report saved to htmlcov/index.html"
 
 lint-flake8:
-  . venv/bin/activate && flake8 sitemap_url_fetcher.py tests/ # Run flake8 linter
+    . venv/bin/activate && flake8 sitemap_fetcher/ tests/
 
 lint-pylint:
-  . venv/bin/activate && pylint sitemap_url_fetcher.py tests/ # Run pylint linter
+    . venv/bin/activate && pylint sitemap_fetcher/ tests/
 
-lint: lint-flake8 lint-pylint # Run both linters
+lint: lint-flake8 lint-pylint
 
 typecheck:
-  . venv/bin/activate && mypy sitemap_url_fetcher.py tests/ # Run mypy type checker
+    . venv/bin/activate && mypy sitemap_fetcher/ tests/
 
 clean:
-  rm -rf venv
-  rm -f urls.txt
-```
+    rm -rf venv
+    rm -f urls.txt urls.txt.state.json
+    rm -rf htmlcov .pytest_cache .mypy_cache
+    find . -type f -name '*.pyc' -delete
+    find . -type d -name '__pycache__' -delete
