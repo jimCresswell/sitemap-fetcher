@@ -117,20 +117,24 @@ class SitemapProcessor:
         except FileNotFoundError:
             # This case should theoretically be caught by os.path.exists, but added for robustness
             print(f"State file not found at {self.config.state_file}, starting fresh.")
+            self.sitemap_queue = [self.config.sitemap_url]  # Initialize queue
             return  # Exit method
         except json.JSONDecodeError as e:
             print(f"Error loading or decoding state file {self.config.state_file}: {e}")
             print("Starting fresh.")
+            self.sitemap_queue = [self.config.sitemap_url]  # Initialize queue
             return  # Exit method
         except (KeyError, ValueError) as e:
             print(
                 f"Error loading state from {self.config.state_file}: Invalid state data format: {e}"
             )
             print("Starting fresh.")
+            self.sitemap_queue = [self.config.sitemap_url]  # Initialize queue
             return  # Exit method
         except IOError as e:
             print(f"Error reading state file {self.config.state_file}: {e}")
             print("Starting fresh.")
+            self.sitemap_queue = [self.config.sitemap_url]  # Initialize queue
             return  # Exit method
 
     # --- Signal Handling ---

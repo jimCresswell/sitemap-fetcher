@@ -17,7 +17,7 @@ demo:
 	. venv/bin/activate && python -m sitemap_fetcher.main https://www.thenational.academy/sitemap.xml urls.txt -n 10
 
 test:
-	. venv/bin/activate && python -m pytest --cov=sitemap_fetcher --cov-report term-missing --maxfail=1 --disable-warnings
+	. venv/bin/activate && python -m pytest --cov=sitemap_fetcher --cov-report term-missing
 
 clean:
 	rm -rf venv
